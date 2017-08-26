@@ -1,0 +1,38 @@
+# Bookstore Laravel/VueJS:
+	- view books listing
+	- view details about single book
+	- add book to cart
+	- view cart
+	- purchase cart
+	- view order confirmation
+
+	- dockerize and push to production (digitalocean)
+	- jenkins build pipeline setup with github
+
+	- admin system to CRUD books
+	- focus on order and inventory management
+	- some kind of overview (report) per week/month
+
+	- "customers viewing this item also bought"
+	- "similar items"
+	- feedback system
+
+# REST API Recipes NodeJS
+	- token auth
+	- sign up to create api key
+
+	- you can see everyones recipes, but also CRUD your own
+	- possibly mark certain recipes (session) and download pdfs in one go
+	- can further as a "recipes for the week" kind of thing, where it calculates what to shop
+
+# Blog Flask
+	- posts, comments, likes, tags, subscriptions, trending, filters
+	- some nicer textarea to write posts with images embedded, format text etc
+	- actually push to heroku and use to blog about programming
+
+# Time management system (Java?)
+	- overview of total +/- time per day/week/month/total
+	- admin has an account and creates accounts for employees (configures their required work hours per week, public holidays etc)
+	- users commit their work time each day
+	- users apply for holiday
+	- admins get holiday applications and can approve/deny
