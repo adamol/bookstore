@@ -30,3 +30,9 @@ $factory->define(App\Category::class, function (Faker\Generator $faker) {
         'name' => 'fantasi'
     ];
 });
+
+$factory->define(App\InventoryItem::class, function (Faker\Generator $faker) {
+    return [
+        'book_id' => 1
+    ];
+});

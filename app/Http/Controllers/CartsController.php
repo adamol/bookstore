@@ -4,16 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Book;
 use App\ShoppingCart;
+use App\InventoryItem;
 use Illuminate\Http\Request;
+use App\Exceptions\NotEnoughInventory;
 
 class CartsController extends Controller
 {
+    public function show()
+    {
+        return ShoppingCart::get();
+    }
+
     public function store(Request $request)
     {
-        ShoppingCart::add($request->book_id, $request->quantity);
-        # session()->push('cart.books', [
-        #     'book_id'  => $request->book_id,
-        #     'quantity' => $request->quantity
-        # ]);
+        try {
+            ShoppingCart::add($request->book_id, $request->quantity);
+        } catch (NotEnoughInventory $e) {
+
+        }
     }
 }

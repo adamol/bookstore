@@ -2,10 +2,16 @@
 
 namespace App;
 
+use App\Exceptions\NotEnoughInventory;
+
 class ShoppingCart
 {
     public static function add($bookId, $quantity)
     {
+        if (InventoryItem::where('book_id', $bookId)->count() < $quantity) {
+            throw new NotEnoughInventory;
+        }
+
         session()->push('cart.books', [
             'book_id'  => $bookId,
             'quantity' => $quantity
