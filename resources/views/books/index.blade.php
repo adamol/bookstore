@@ -5,7 +5,7 @@
 
 <ul>
     @foreach ($books as $book)
-        <li><a href="books/{{ $book->id }}">{{ $book->title }}</a> by {{ $book->author }}</li>
+        <li><a href="books/{{ $book->id }}">{{ $book->title }}</a> by {{ $book->author_names }}</li>
     @endforeach
 </ul>
 @endsection

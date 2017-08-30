@@ -13,12 +13,20 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
 });
 
 $factory->define(App\Book::class, function (Faker\Generator $faker) {
-    $categories = ['fantasi', 'thriller'];
-
     return [
         'title' => $faker->sentence,
         'description' => $faker->paragraph,
-        'author' => $faker->name,
-        'category' => $categories[array_rand($categories)]
+    ];
+});
+
+$factory->define(App\Author::class, function (Faker\Generator $faker) {
+    return [
+        'name' => 'John Doe'
+    ];
+});
+
+$factory->define(App\Category::class, function (Faker\Generator $faker) {
+    return [
+        'name' => 'fantasi'
     ];
 });

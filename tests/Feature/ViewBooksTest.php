@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Book;
+use App\Author;
+use App\Category;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -16,11 +18,15 @@ class ViewBooksTest extends TestCase
     function can_view_a_single_book()
     {
         $book = Book::create([
-            'title' => 'A really awesome book',
+            'title'       => 'A really awesome book',
             'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'John Doe',
-            'category' => 'fantasi'
         ]);
+        $book->authors()->attach(
+            Author::create(['name' => 'John Doe'])
+        );
+        $book->categories()->attach(
+            Category::create(['name' => 'Fantasi'])
+        );
 
 
         $response = $this->get("books/{$book->id}");
@@ -28,7 +34,7 @@ class ViewBooksTest extends TestCase
         $response->assertSee('A really awesome book');
         $response->assertSee('Lorem ipsum dolar sit amet');
         $response->assertSee('John Doe');
-        $response->assertSee('fantasi');
+        $response->assertSee('Fantasi');
     }
 
 
@@ -36,17 +42,13 @@ class ViewBooksTest extends TestCase
     function can_view_a_books_listing()
     {
         $bookA = Book::create([
-            'title' => 'Book A',
+            'title'       => 'Book A',
             'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'John Doe',
-            'category' => 'fantasi'
-        ]);
+        ])->authors()->attach(Author::create(['name' => 'John Doe']));
         $bookB = Book::create([
-            'title' => 'Book B',
+            'title'       => 'Book B',
             'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'Jane Doe',
-            'category' => 'fantasi'
-        ]);
+        ])->authors()->attach(Author::create(['name' => 'Jane Doe']));
 
 
         $response = $this->get("books");
@@ -60,25 +62,17 @@ class ViewBooksTest extends TestCase
     /** @test */
     function books_can_be_filtered_by_category()
     {
-        $fantasiA = Book::create([
-            'title' => 'Fantasi A',
-            'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'John Doe',
-            'category' => 'fantasi'
-        ]);
-        $thriller = Book::create([
-            'title' => 'Some Thriller',
-            'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'Jane Doe',
-            'category' => 'thriller'
-        ]);
-        $fantasiB = Book::create([
-            'title' => 'Fantasi B',
-            'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'Jane Doe',
-            'category' => 'fantasi'
-        ]);
-
+        $fantasi  = Category::create(['name' => 'fantasi']);
+        $thriller = Category::create(['name' => 'thriller']);
+        $fantasi->books()->attach(
+            factory(Book::class)->create(['title' => 'Fantasi A'])
+        );
+        $thriller->books()->attach(
+            factory(Book::class)->create(['title' => 'Some Thriller'])
+        );
+        $fantasi->books()->attach(
+            factory(Book::class)->create(['title' => 'Fantasi B'])
+        );
 
         $response = $this->get("books?category=fantasi");
 
@@ -90,24 +84,17 @@ class ViewBooksTest extends TestCase
     /** @test */
     function books_can_be_filtered_by_author()
     {
-        $janesFirst = Book::create([
-            'title' => 'Janes First',
-            'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'Jane Doe',
-            'category' => 'fantasi'
-        ]);
-        $johnsBook = Book::create([
-            'title' => 'Johns Book',
-            'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'John Doe',
-            'category' => 'fantasi'
-        ]);
-        $janesSecond = Book::create([
-            'title' => 'Janes Second',
-            'description' => 'Lorem ipsum dolar sit amet',
-            'author' => 'Jane Doe',
-            'category' => 'fantasi'
-        ]);
+        $jane = Author::create(['name' => 'Jane Doe']);
+        $john = Author::create(['name' => 'John Doe']);
+        $jane->books()->attach(
+            factory(Book::class)->create(['title' => 'Janes First'])
+        );
+        $john->books()->attach(
+            factory(Book::class)->create(['title' => 'Johns Book'])
+        );
+        $jane->books()->attach(
+            factory(Book::class)->create(['title' => 'Janes Second'])
+        );
 
 
         $response = $this->get('books?author=jane_doe');
