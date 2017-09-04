@@ -5,6 +5,7 @@
 
 <p>written by: {{ $book->author_names }}, category: {{ $book->category_names }}</p>
 <p>{{ $book->description }}</p>
+<p>{{ $book->formatted_inventory_quantity }}</p>
 
 <form method="POST" action="/cart">
     {{ csrf_field() }}

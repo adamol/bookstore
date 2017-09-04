@@ -12,7 +12,7 @@ class CartsController extends Controller
 {
     public function show()
     {
-        return ShoppingCart::get();
+        return view('cart.show', ['books' => ShoppingCart::get()]);
     }
 
     public function store(Request $request)
@@ -22,5 +22,7 @@ class CartsController extends Controller
         } catch (NotEnoughInventory $e) {
 
         }
+
+        return redirect()->back();
     }
 }

@@ -13,6 +13,11 @@ class Book extends Model
         return $this->belongsToMany(Author::class);
     }
 
+    public function inventoryItems()
+    {
+        return $this->hasMany(InventoryItem::class);
+    }
+
     public function categories()
     {
         return $this->belongsToMany(Category::class);
@@ -30,5 +35,28 @@ class Book extends Model
         return rtrim(implode(', ', $this->categories->map(function($category) {
             return ucfirst($category->name);
         })->toArray()));
+    }
+
+    public function getFormattedInventoryQuantityAttribute()
+    {
+        $inventoryQuantity = $this->inventory_quantity;
+
+        return $inventoryQuantity == 0
+            ? 'out of stock'
+            : $inventoryQuantity . ' in stock';
+    }
+
+    public function getInventoryQuantityAttribute()
+    {
+        return InventoryItem::where('book_id', $this->id)->whereNull('reserved_at')->count();
+    }
+
+    public function addInventory($quantity)
+    {
+        foreach (range(1, $quantity) as $i) {
+            InventoryItem::create(['book_id' => $this->id]);
+        }
+
+        return $this;
     }
 }

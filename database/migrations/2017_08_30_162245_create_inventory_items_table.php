@@ -16,6 +16,7 @@ class CreateInventoryItemsTable extends Migration
         Schema::create('inventory_items', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('book_id');
+            $table->datetime('reserved_at')->nullable();
             $table->timestamps();
         });
     }

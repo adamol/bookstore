@@ -6,3 +6,5 @@ Route::get('books/{id}', 'BooksController@show');
 
 Route::get('cart', 'CartsController@show');
 Route::post('cart', 'CartsController@store');
+
+Route::post('orders', 'OrdersController@store');

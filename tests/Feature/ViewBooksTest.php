@@ -6,6 +6,7 @@ use App\Book;
 use App\Author;
 use App\Category;
 use Tests\TestCase;
+use App\InventoryItem;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -27,6 +28,7 @@ class ViewBooksTest extends TestCase
         $book->categories()->attach(
             Category::create(['name' => 'Fantasi'])
         );
+        factory(InventoryItem::class, 3)->create(['book_id' => $book->id]);
 
 
         $response = $this->get("books/{$book->id}");
@@ -35,6 +37,7 @@ class ViewBooksTest extends TestCase
         $response->assertSee('Lorem ipsum dolar sit amet');
         $response->assertSee('John Doe');
         $response->assertSee('Fantasi');
+        $response->assertSee('3 in stock');
     }
 
 
