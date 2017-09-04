@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Billing\PaymentGateway;
 use Illuminate\Http\Request;
 use App\ShoppingCart;
+use App\Inventory;
 
 class OrdersController extends Controller
 {
@@ -13,13 +14,13 @@ class OrdersController extends Controller
         $books = ShoppingCart::get();
 
         try {
-            $reservation = Inventory::reserveBooks($books);
+            $reservation = Inventory::reserveBooks($books, $request->email);
 
-            $amount = $paymentGateway->charge($reservation->amount);
+            $amount = $paymentGateway->charge($reservation->amount());
 
             $order = Order::create([
                 'amount' => $amount,
-                'email' => $request->email,
+                'email' => $reservation->email(),
                 'confirmation_number' => OrderConfirmationNumber::generate()
             ]);
 

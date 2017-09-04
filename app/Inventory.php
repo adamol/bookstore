@@ -17,6 +17,8 @@ class Inventory
         $books->each(function($book) {
             Inventory::findFor($book, $book->quantity)->each->reserve();
         });
+
+        return new Reservation($books);
     }
 
     public static function findFor($book, $quantity)

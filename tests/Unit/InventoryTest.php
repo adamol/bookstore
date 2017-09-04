@@ -23,8 +23,9 @@ class InventoryTest extends TestCase
         $bookC = factory(Book::class)->create()->addInventory(3);
         $bookC->quantity = 3;
 
-        Inventory::reserveBooks(collect([$bookA, $bookB, $bookC]));
+        $reservation = Inventory::reserveBooks(collect([$bookA, $bookB, $bookC]), 'john@example.com');
 
+        $this->assertInstanceOf(\App\Reservation::class, $reservation);
         $this->assertEquals(2, InventoryItem::where('book_id', $bookA->id)->whereNotNull('reserved_at')->count());
         $this->assertEquals(1, InventoryItem::where('book_id', $bookB->id)->whereNotNull('reserved_at')->count());
         $this->assertEquals(3, InventoryItem::where('book_id', $bookC->id)->whereNotNull('reserved_at')->count());
