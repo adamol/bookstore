@@ -3,14 +3,19 @@
 namespace App;
 
 use Carbon\Carbon;
+use App\Exceptions\NotEnoughInventoryItems;
 
 class Inventory
 {
-    public static function reserveBooks($books)
+    public static function reserveBooks($books, $email)
     {
+        if ($books->isEmpty()) {
+            throw new EmptyCartException;
+        }
+
         $books->each(function($book) {
             if ($book->inventory_quantity < $book->quantity) {
-                throw new \Exception('Too few items in inventory');
+                throw new NotEnoughInventoryItems;
             }
         });
 
@@ -18,7 +23,7 @@ class Inventory
             Inventory::findFor($book, $book->quantity)->each->reserve();
         });
 
-        return new Reservation($books);
+        return new Reservation($books, $email);
     }
 
     public static function findFor($book, $quantity)
