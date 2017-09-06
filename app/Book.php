@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Exceptions\NotEnoughInventoryException;
 
 class Book extends Model
 {
@@ -21,6 +22,13 @@ class Book extends Model
     public function categories()
     {
         return $this->belongsToMany(Category::class);
+    }
+
+    public function assertEnoughInventory()
+    {
+        if ($this->inventory_quantity < $this->quantity) {
+            throw new NotEnoughInventoryException;
+        }
     }
 
     public function getAuthorNamesAttribute()

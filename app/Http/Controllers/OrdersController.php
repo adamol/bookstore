@@ -20,22 +20,26 @@ class OrdersController extends Controller
         ]);
 
         try {
-            $reservation = Inventory::reserveBooks(ShoppingCart::get(), $request->email);
+            $reservation = ShoppingCart::reserveFor($request->email);
 
             $amount = $paymentGateway->charge(
                 $reservation->amount(), $request->payment_token
             );
 
-            // $order = Order::create([
-            //     'amount' => $amount,
-            //     'email' => $reservation->email(),
-            //     'confirmation_number' => OrderConfirmationNumber::generate()
-            // ]);
+            $order = Order::create([
+                'amount' => $amount,
+                'email' => $reservation->email(),
+                # 'confirmation_number' => OrderConfirmationNumber::generate(),
+                # 'card_last_four' => $charge->cardLastFour()
+            ]);
 
-            // $order->inventoryItems()->attach($reservation->inventoryItems());
+            foreach ($reservation->items() as $item) {
+                $order->inventoryItems()->save($item);
+            }
         } catch (EmptyCartException $e) {
             return response()->json(['cart' => 'Cannot place an order for an empty cart.'], 422);
         } catch (NotEnoughInventoryException $e) {
+
         } catch (TokenMismatchException $e) {
             return response()->json(['payment_token' => 'Could not place an order with the given payment token.'], 422);
         }

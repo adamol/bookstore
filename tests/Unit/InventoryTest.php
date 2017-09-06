@@ -31,20 +31,6 @@ class InventoryTest extends TestCase
         $this->assertEquals(3, InventoryItem::where('book_id', $bookC->id)->whereNotNull('reserved_at')->count());
     }
 
-    /** @test */
-    function cannot_reserve_more_books_than_exist_in_inventory()
-    {
-        $book = factory(Book::class)->create()->addInventory(1);
-        $book->quantity = 2;
-
-        try {
-            Inventory::reserveBooks(collect([$book]));
-
-            $this->fail('Reserved more books than exist in inventory');
-        } catch (\Exception $e) {
-            $this->assertEquals(0, InventoryItem::where('book_id', $book->id)->whereNotNull('reserved_at')->count());
-        }
-    }
 
     /** @test */
     function find_for_returns_inventory_items_for_book()

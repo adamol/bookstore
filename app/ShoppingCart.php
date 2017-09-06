@@ -2,14 +2,32 @@
 
 namespace App;
 
-use App\Exceptions\NotEnoughInventory;
+use App\Exceptions\NotEnoughInventoryException;
+use App\Exceptions\EmptyCartException;
 
 class ShoppingCart
 {
+    public static function reserveFor($email)
+    {
+        $books = self::get();
+
+        if ($books->isEmpty()) {
+            throw new EmptyCartException;
+        }
+
+        $books->each->assertEnoughInventory();
+
+        $items = $books->map(function($book) {
+            return InventoryItem::reserveFor($book, $book->quantity);
+        })->flatten();
+
+        return new Reservation($items, $email);
+    }
+
     public static function add($bookId, $quantity)
     {
         if (InventoryItem::where('book_id', $bookId)->count() < $quantity) {
-            throw new NotEnoughInventory;
+            throw new NotEnoughInventoryException;
         }
 
         session()->push('cart.books', [

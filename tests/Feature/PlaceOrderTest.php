@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Order;
 use App\Book;
 use Tests\TestCase;
 use App\Billing\PaymentGateway;
@@ -34,9 +35,15 @@ class PlaceOrderTest extends TestCase
             ]
         ];
 
-        $this->withSession($fakeCart)->post('orders');
+        $this->withSession($fakeCart)->post('orders', [
+            'payment_token' => 'VALIDTESTTOKEN',
+            'email' =>  'john@example.com'
+        ]);
 
-        $this->assertEquals([2500], $this->fakePaymentGateway->charges());
+        $this->assertEquals([3500], $this->fakePaymentGateway->charges());
+        $order = Order::where('email', 'john@example.com')->first();
+        $this->assertEquals(3500, $order->amount);
+        $this->assertEquals(3, $order->inventoryItems()->count());
     }
 
     /** @test */

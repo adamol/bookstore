@@ -12,5 +12,27 @@ class InventoryItem extends Model
     public function reserve()
     {
         $this->update(['reserved_at' => Carbon::now()]);
+
+        return $this;
+    }
+
+    public static function reserveFor($book, $quantity)
+    {
+        return InventoryItem::where('book_id', $book->id)
+            ->whereNull('reserved_at')
+            ->take($quantity)
+            ->get()
+            ->each
+            ->reserve();
+    }
+
+    public function book()
+    {
+        return $this->belongsTo(Book::class);
+    }
+
+    public function getPriceAttribute()
+    {
+        return $this->book->price;
     }
 }
