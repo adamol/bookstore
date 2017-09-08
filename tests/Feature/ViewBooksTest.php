@@ -112,4 +112,16 @@ class ViewBooksTest extends TestCase
         $response->assertSee('Janes Second');
         $response->assertDontSee('Johns Book');
     }
+
+    /** @test */
+    function books_can_be_filtered_by_category_and_author()
+    {
+
+    }
+
+    /** @test */
+    function books_can_be_sorted_by_price()
+    {
+
+    }
 }

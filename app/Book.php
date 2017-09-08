@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Exceptions\NotEnoughInventoryException;
+use App\Filters\BookFilters;
 
 class Book extends Model
 {
@@ -29,6 +30,11 @@ class Book extends Model
         if ($this->inventory_quantity < $quantity) {
             throw new NotEnoughInventoryException;
         }
+    }
+
+    public function scopeApplyFilters($query, BookFilters $filters)
+    {
+        return $filters->applyTo($query);
     }
 
     public function getFormattedPriceAttribute()
