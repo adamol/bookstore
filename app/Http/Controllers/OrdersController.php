@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\EmptyCartException;
 use App\Exceptions\TokenMismatchException;
 use App\Exceptions\NotEnoughInventoryException;
 use App\Billing\PaymentGateway;
@@ -12,7 +13,7 @@ use App\Order;
 
 class OrdersController extends Controller
 {
-    public function store(Request $request, PaymentGateway $paymentGateway)
+    public function store(Request $request, PaymentGateway $paymentGateway, ShoppingCart $cart)
     {
         $this->validate($request, [
             'payment_token' => 'required',
@@ -20,7 +21,7 @@ class OrdersController extends Controller
         ]);
 
         try {
-            $reservation = ShoppingCart::reserveFor($request->email);
+            $reservation = $cart->reserveFor($request->email);
 
             $amount = $paymentGateway->charge(
                 $reservation->amount(), $request->payment_token

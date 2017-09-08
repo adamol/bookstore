@@ -24,9 +24,9 @@ class Book extends Model
         return $this->belongsToMany(Category::class);
     }
 
-    public function assertEnoughInventory()
+    public function assertEnoughInventory($quantity)
     {
-        if ($this->inventory_quantity < $this->quantity) {
+        if ($this->inventory_quantity < $quantity) {
             throw new NotEnoughInventoryException;
         }
     }
@@ -56,7 +56,9 @@ class Book extends Model
 
     public function getInventoryQuantityAttribute()
     {
-        return InventoryItem::where('book_id', $this->id)->whereNull('reserved_at')->count();
+        return InventoryItem::where('book_id', $this->id)
+            ->whereNull('reserved_at')
+            ->count();
     }
 
     public function addInventory($quantity)

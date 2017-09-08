@@ -15,15 +15,6 @@ class ShoppingCartTest extends TestCase
 {
     use DatabaseMigrations;
 
-    protected $cart;
-
-    public function setUp()
-    {
-        parent::setUp();
-
-        $this->cart = new ShoppingCart;
-    }
-
     /** @test */
     function add_pushes_information_to_the_session()
     {
@@ -62,12 +53,8 @@ class ShoppingCartTest extends TestCase
         session()->push('cart.books', ['book_id' => 1, 'quantity' => 1]);
 
         $cartItem = $this->cart->get()->first();
-        $this->assertEquals([
-            0 => [
-                'book_id' => $book->id,
-                'quantity' => 1
-            ]
-        ], $this->cart->get()->toArray());
+        $this->assertTrue( instanceof Book);
+        $this->assertEquals($book->id, $this->cart->get()->first()->id);
     }
 
     /** @test */

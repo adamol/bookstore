@@ -16,9 +16,14 @@ class InventoryItem extends Model
         return $this;
     }
 
-    public static function reserveFor($book, $quantity)
+    public function scopeAvailable($query)
     {
-        return InventoryItem::where('book_id', $book->id)
+        return $query->whereNull('reserved_at')->whereNull('order_id');
+    }
+
+    public static function reserveFor($bookId, $quantity)
+    {
+        return InventoryItem::where('book_id', $bookId)
             ->whereNull('reserved_at')
             ->take($quantity)
             ->get()

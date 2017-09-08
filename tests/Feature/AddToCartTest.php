@@ -15,6 +15,15 @@ class AddToCartTest extends testcase
 {
     use DatabaseMigrations;
 
+    protected $cart;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->cart = new ShoppingCart;
+    }
+
     /** @test */
     function a_book_can_be_added_to_the_cart()
     {
@@ -23,10 +32,9 @@ class AddToCartTest extends testcase
 
         $this->post('cart', ['book_id' => $book->id, 'quantity' => 2]);
 
-        $cartItem = ShoppingCart::get()->first();
-        $this->assertTrue($cartItem instanceof Book);
-        $this->assertEquals($book->id, $cartItem->id);
-        $this->assertEquals(2, $cartItem->quantity);
+        $cartItem = $this->cart->get()->first();
+        $this->assertEquals($book->id, $cartItem['book_id']);
+        $this->assertEquals(2, $cartItem['quantity']);
     }
 
     /** @test */
@@ -37,7 +45,7 @@ class AddToCartTest extends testcase
 
         $this->post('cart', ['book_id' => $book->id, 'quantity' => 2]);
 
-        $this->assertNull(ShoppingCart::get()->first());
+        $this->assertNull($this->cart->get()->first());
     }
 }
 

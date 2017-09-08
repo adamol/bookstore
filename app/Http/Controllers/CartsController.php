@@ -10,15 +10,15 @@ use App\Exceptions\NotEnoughInventory;
 
 class CartsController extends Controller
 {
-    public function show()
+    public function show(ShoppingCart $cart)
     {
-        return view('cart.show', ['books' => ShoppingCart::get()]);
+        return view('cart.show', ['books' => $cart->get()]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ShoppingCart $cart)
     {
         try {
-            ShoppingCart::add($request->book_id, $request->quantity);
+            $cart->add($request->book_id, $request->quantity);
         } catch (NotEnoughInventory $e) {
 
         }
