@@ -21,6 +21,7 @@ class ViewBooksTest extends TestCase
         $book = Book::create([
             'title'       => 'A really awesome book',
             'description' => 'Lorem ipsum dolar sit amet',
+            'price'       => 1000
         ]);
         $book->authors()->attach(
             Author::create(['name' => 'John Doe'])
@@ -38,6 +39,7 @@ class ViewBooksTest extends TestCase
         $response->assertSee('John Doe');
         $response->assertSee('Fantasi');
         $response->assertSee('3 in stock');
+        $response->assertSee('10.00£');
     }
 
 
@@ -47,10 +49,12 @@ class ViewBooksTest extends TestCase
         $bookA = Book::create([
             'title'       => 'Book A',
             'description' => 'Lorem ipsum dolar sit amet',
+            'price'       => 1000
         ])->authors()->attach(Author::create(['name' => 'John Doe']));
         $bookB = Book::create([
             'title'       => 'Book B',
             'description' => 'Lorem ipsum dolar sit amet',
+            'price'       => 1500
         ])->authors()->attach(Author::create(['name' => 'Jane Doe']));
 
 
@@ -58,8 +62,10 @@ class ViewBooksTest extends TestCase
 
         $response->assertSee('Book A');
         $response->assertSee('John Doe');
+        $response->assertSee('10.00£');
         $response->assertSee('Book B');
         $response->assertSee('Jane Doe');
+        $response->assertSee('15.00£');
     }
 
     /** @test */

@@ -31,6 +31,11 @@ class Book extends Model
         }
     }
 
+    public function getFormattedPriceAttribute()
+    {
+        return number_format($this->price / 100, 2);
+    }
+
     public function getAuthorNamesAttribute()
     {
         return rtrim(implode(', ', $this->authors->map(function($author) {

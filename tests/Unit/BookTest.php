@@ -29,6 +29,14 @@ class BookTest extends TestCase
     }
 
     /** @test */
+    public function can_get_a_formatted_price()
+    {
+        $book = factory(Book::class)->create(['price' => 1000]);
+
+        $this->assertEquals('10.00', $book->formatted_price);
+    }
+
+    /** @test */
     public function can_format_multiple_category_names()
     {
         $book = factory(Book::class)->create();
