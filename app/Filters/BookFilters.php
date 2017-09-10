@@ -4,6 +4,7 @@ namespace App\Filters;
 
 use Illuminate\Http\Request;
 use App\Category;
+use App\Author;
 
 class BookFilters
 {
@@ -20,37 +21,31 @@ class BookFilters
     {
         $this->query = $query;
 
-        foreach ($this->filters as $filter) {
-            if ($this->request->has($filter) && method_exists($this, $filter)) {
-                $this->$filter();
+        foreach ($this->getFilters() as $filter => $value) {
+            if (method_exists($this, $filter)) {
+                $this->$filter($value);
             }
         }
 
         return $this->query;
     }
 
-    protected function author()
+    protected function getFilters()
     {
-        $this->query->join('author_book', 'books.id', '=', 'author_book.book_id');
-
-        $this->query->join('authors', 'author_book.author_id', '=', 'authors.id');
-
-        $author = ucwords(str_replace('_', ' ', $this->request->author));
-
-        $this->query->where('name', $author);
+        return $this->request->intersect($this->filters);
     }
 
-    protected function category()
+    protected function author($author)
     {
-        $this->query->join('book_category', 'books.id', '=', 'book_category.book_id');
+        $author = Author::byKey($author);
 
-        $this->query->join('categories', 'book_category.category_id', '=', 'categories.id');
-
-        $this->query->where('name', $this->request->category);
+        $this->query->where('author_id', $author->id);
     }
 
-    protected function price()
+    protected function category($category)
     {
+        $category = Category::where('name', $category)->first();
 
+        $this->query->where('category_id', $category->id);
     }
 }

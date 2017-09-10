@@ -10,9 +10,9 @@ class Book extends Model
 {
     protected $guarded = [];
 
-    public function authors()
+    public function author()
     {
-        return $this->belongsToMany(Author::class);
+        return $this->belongsTo(Author::class);
     }
 
     public function inventoryItems()
@@ -20,9 +20,9 @@ class Book extends Model
         return $this->hasMany(InventoryItem::class);
     }
 
-    public function categories()
+    public function category()
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsTo(Category::class);
     }
 
     public function assertEnoughInventory($quantity)
@@ -40,20 +40,6 @@ class Book extends Model
     public function getFormattedPriceAttribute()
     {
         return number_format($this->price / 100, 2);
-    }
-
-    public function getAuthorNamesAttribute()
-    {
-        return rtrim(implode(', ', $this->authors->map(function($author) {
-            return $author->name;
-        })->toArray()));
-    }
-
-    public function getCategoryNamesAttribute()
-    {
-        return rtrim(implode(', ', $this->categories->map(function($category) {
-            return ucfirst($category->name);
-        })->toArray()));
     }
 
     public function getFormattedInventoryQuantityAttribute()

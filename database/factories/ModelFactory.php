@@ -16,7 +16,13 @@ $factory->define(App\Book::class, function (Faker\Generator $faker) {
     return [
         'title' => $faker->sentence,
         'description' => $faker->paragraph,
-        'price' => 1000
+        'price' => 1000,
+        'category_id' => function() {
+            return factory(App\Category::class)->create()->id;
+        },
+        'author_id' => function() {
+            return factory(App\Author::class)->create()->id;
+        },
     ];
 });
 

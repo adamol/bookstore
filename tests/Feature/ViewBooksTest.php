@@ -21,16 +21,10 @@ class ViewBooksTest extends TestCase
         $book = Book::create([
             'title'       => 'A really awesome book',
             'description' => 'Lorem ipsum dolar sit amet',
-            'price'       => 1000
-        ]);
-        $book->authors()->attach(
-            Author::create(['name' => 'John Doe'])
-        );
-        $book->categories()->attach(
-            Category::create(['name' => 'Fantasi'])
-        );
-        factory(InventoryItem::class, 3)->create(['book_id' => $book->id]);
-
+            'price'       => 1000,
+            'author_id'   => factory(Author::class)->create(['name' => 'John Doe'])->id,
+            'category_id' => factory(Category::class)->create(['name' => 'Fantasi'])->id
+        ])->addInventory(3);
 
         $response = $this->get("books/{$book->id}");
 
@@ -49,14 +43,17 @@ class ViewBooksTest extends TestCase
         $bookA = Book::create([
             'title'       => 'Book A',
             'description' => 'Lorem ipsum dolar sit amet',
-            'price'       => 1000
-        ])->authors()->attach(Author::create(['name' => 'John Doe']));
+            'price'       => 1000,
+            'author_id'   => factory(Author::class)->create(['name' => 'John Doe'])->id,
+            'category_id' => factory(Category::class)->create()->id
+        ]);
         $bookB = Book::create([
             'title'       => 'Book B',
             'description' => 'Lorem ipsum dolar sit amet',
-            'price'       => 1500
-        ])->authors()->attach(Author::create(['name' => 'Jane Doe']));
-
+            'price'       => 1500,
+            'author_id'   => factory(Author::class)->create(['name' => 'Jane Doe'])->id,
+            'category_id' => factory(Category::class)->create()->id
+        ]);
 
         $response = $this->get("books");
 
@@ -73,15 +70,10 @@ class ViewBooksTest extends TestCase
     {
         $fantasi  = Category::create(['name' => 'fantasi']);
         $thriller = Category::create(['name' => 'thriller']);
-        $fantasi->books()->attach(
-            factory(Book::class)->create(['title' => 'Fantasi A'])
-        );
-        $thriller->books()->attach(
-            factory(Book::class)->create(['title' => 'Some Thriller'])
-        );
-        $fantasi->books()->attach(
-            factory(Book::class)->create(['title' => 'Fantasi B'])
-        );
+
+        factory(Book::class)->create(['title' => 'Fantasi A',     'category_id' => $fantasi->id]);
+        factory(Book::class)->create(['title' => 'Some Thriller', 'category_id' => $thriller->id]);
+        factory(Book::class)->create(['title' => 'Fantasi B',     'category_id' => $fantasi->id]);
 
         $response = $this->get("books?category=fantasi");
 
@@ -95,15 +87,10 @@ class ViewBooksTest extends TestCase
     {
         $jane = Author::create(['name' => 'Jane Doe']);
         $john = Author::create(['name' => 'John Doe']);
-        $jane->books()->attach(
-            factory(Book::class)->create(['title' => 'Janes First'])
-        );
-        $john->books()->attach(
-            factory(Book::class)->create(['title' => 'Johns Book'])
-        );
-        $jane->books()->attach(
-            factory(Book::class)->create(['title' => 'Janes Second'])
-        );
+
+        factory(Book::class)->create(['title' => 'Janes First',  'author_id' => $jane->id]);
+        factory(Book::class)->create(['title' => 'Johns Book',   'author_id' => $john->id]);
+        factory(Book::class)->create(['title' => 'Janes Second', 'author_id' => $jane->id]);
 
 
         $response = $this->get('books?author=jane_doe');
@@ -114,14 +101,35 @@ class ViewBooksTest extends TestCase
     }
 
     /** @test */
-    function books_can_be_filtered_by_category_and_author()
+    function books_can_be_filtered_by_author_and_category()
     {
+        $jane = Author::create(['name' => 'Jane Doe']);
+        $john = Author::create(['name' => 'John Doe']);
 
-    }
+        $fantasi  = Category::create(['name' => 'fantasi']);
+        $thriller = Category::create(['name' => 'thriller']);
 
-    /** @test */
-    function books_can_be_sorted_by_price()
-    {
+        factory(Book::class)->create([
+            'title' => 'Janes Thriller',
+            'author_id' => $jane->id,
+            'category_id' => $thriller->id
+        ]);
+        factory(Book::class)->create([
+            'title' => 'Johns Thriller',
+            'author_id' => $john->id,
+            'category_id' => $thriller->id
+        ]);
+        factory(Book::class)->create([
+            'title' => 'Janes Fantasi',
+            'author_id' => $jane->id,
+            'category_id' => $fantasi->id
+        ]);
 
+
+        $response = $this->get('books?author=jane_doe&category=thriller');
+
+        $response->assertSee('Janes Thriller');
+        $response->assertDontSee('Janes Fantasi');
+        $response->assertDontSee('Johns Thriller');
     }
 }
