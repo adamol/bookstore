@@ -2,17 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\EmptyCartException;
-use App\Exceptions\TokenMismatchException;
+use Mail;
+use App\Facades\InventoryCode;
+use App\Mail\OrderConfirmationEmail;
+use App\Facades\OrderConfirmationNumber;
 use App\Exceptions\NotEnoughInventoryException;
+use App\Exceptions\TokenMismatchException;
+use App\Exceptions\EmptyCartException;
 use App\Billing\PaymentGateway;
 use Illuminate\Http\Request;
 use App\ShoppingCart;
-use App\Inventory;
 use App\Order;
 
 class OrdersController extends Controller
 {
+    public function show($confirmationNumber)
+    {
+        $order = Order::where('confirmation_number', $confirmationNumber)->first();
+
+        $order->load('inventoryItems.book.author');
+
+        return view('orders.show', compact('order'));
+    }
+
     public function store(Request $request, PaymentGateway $paymentGateway, ShoppingCart $cart)
     {
         $this->validate($request, [
@@ -23,24 +35,29 @@ class OrdersController extends Controller
         try {
             $reservation = $cart->reserveFor($request->email);
 
-            $amount = $paymentGateway->charge(
+            $charge = $paymentGateway->charge(
                 $reservation->amount(), $request->payment_token
             );
 
             $order = Order::create([
-                'amount' => $amount,
+                'amount' => $charge->amount(),
                 'email' => $reservation->email(),
-                # 'confirmation_number' => OrderConfirmationNumber::generate(),
-                # 'card_last_four' => $charge->cardLastFour()
+                'confirmation_number' => OrderConfirmationNumber::generate(),
+                'card_last_four' => $charge->cardLastFour()
             ]);
 
             foreach ($reservation->items() as $item) {
+                $item->code = InventoryCode::generateFor($order);
                 $order->inventoryItems()->save($item);
             }
+
+            Mail::to($order->email)->send(new OrderConfirmationEmail($order));
+
+            return response()->json($order, 201);
         } catch (EmptyCartException $e) {
             return response()->json(['cart' => 'Cannot place an order for an empty cart.'], 422);
         } catch (NotEnoughInventoryException $e) {
-
+            return response()->json(['inventory' => 'Cannot place an order an item quantity which exceeds the inventory limit.'], 422);
         } catch (TokenMismatchException $e) {
             return response()->json(['payment_token' => 'Could not place an order with the given payment token.'], 422);
         }

@@ -20,9 +20,9 @@ class Book extends Model
         return $this->hasMany(InventoryItem::class);
     }
 
-    public function category()
+    public function categories()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class);
     }
 
     public function assertEnoughInventory($quantity)
@@ -65,5 +65,18 @@ class Book extends Model
         }
 
         return $this;
+    }
+
+    public function getFormattedCategoriesAttribute()
+    {
+        $categoriesCount = $this->categories()->count();
+
+        if ($categoriesCount > 1) {
+            return implode(', ', $this->categories()->pluck('name')->toArray());
+        } elseif ($categoriesCount === 1) {
+            return $this->categories()->first()->name;
+        } else {
+            return '';
+        }
     }
 }

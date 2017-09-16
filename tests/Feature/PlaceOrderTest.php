@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use Mail;
 use App\Order;
 use App\Book;
 use Tests\TestCase;
 use App\Billing\PaymentGateway;
+use App\Facades\InventoryCode;
 use App\Billing\FakePaymentGateway;
+use App\Mail\OrderConfirmationEmail;
+use App\Facades\OrderConfirmationNumber;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
@@ -25,6 +29,10 @@ class PlaceOrderTest extends TestCase
     /** @test */
     function a_customer_can_purchase_the_items_in_their_cart()
     {
+        Mail::fake();
+        OrderConfirmationNumber::shouldReceive('generate')->andReturn('ORDERCONFIRMATION1234');
+        InventoryCode::shouldReceive('generateFor')->andReturn('ITEMA', 'ITEMB');
+
         $bookA = factory(Book::class)->create(['price' => 1000])->addInventory(2);
         $bookB = factory(Book::class)->create(['price' => 1500])->addInventory(1);
 
@@ -35,15 +43,61 @@ class PlaceOrderTest extends TestCase
             ]
         ];
 
-        $this->withSession($fakeCart)->post('orders', [
-            'payment_token' => 'VALIDTESTTOKEN',
+        $response = $this->withSession($fakeCart)->post('orders', [
+            'payment_token' => $this->fakePaymentGateway->validTestToken($this->fakePaymentGateway::TEST_CARD_NUMBER),
             'email' =>  'john@example.com'
         ]);
 
-        $this->assertEquals([3500], $this->fakePaymentGateway->charges());
+        $response->assertJson([
+            'confirmation_number' => 'ORDERCONFIRMATION1234',
+            'email' => 'john@example.com',
+            'amount' => 3500,
+            'inventory_items' => [
+                ['code' => 'ITEMA'],
+                ['code' => 'ITEMB']
+            ]
+        ]);
+
+        $this->assertEquals(3500, $this->fakePaymentGateway->totalCharges());
         $order = Order::where('email', 'john@example.com')->first();
         $this->assertEquals(3500, $order->amount);
         $this->assertEquals(3, $order->inventoryItems()->count());
+
+        Mail::assertSent(OrderConfirmationEmail::class, function($mail) use ($order) {
+            return $mail->hasTo('john@example.com') && $mail->order->id == $order->id;
+        });
+    }
+
+    /** @test */
+    function two_customers_cannot_purchase_the_same_inventory_item()
+    {
+        $book = factory(Book::class)->create(['price' => 1000])->addInventory(1);
+        $fakeCart = [
+            'cart.books' => [
+                ['book_id' => $book->id, 'quantity' => 1]
+            ]
+        ];
+
+        $this->fakePaymentGateway->beforeFirstCharge(function($paymentGateway) use ($book, $fakeCart) {
+
+            $this->withSession($fakeCart)->post('orders', [
+                'payment_token' => 'VALIDTESTTOKEN',
+                'email' =>  'john@example.com'
+            ]);
+
+            $this->assertNull(Order::where('email', 'john@example.com')->first());
+            $this->assertEquals(0, $paymentGateway->totalCharges());
+        });
+
+        $fakeCart = ['cart.books' => [['book_id' => $book->id, 'quantity' => 1]]];
+
+        $response = $this->withSession($fakeCart)->post('orders', [
+            'payment_token' => 'VALIDTESTTOKEN',
+            'email' =>  'jane@example.com'
+        ]);
+
+        $this->assertNotNull(Order::where('email', 'jane@example.com')->first());
+        $this->assertEquals(1000, $this->fakePaymentGateway->totalCharges());
     }
 
     /** @test */
@@ -137,7 +191,7 @@ class PlaceOrderTest extends TestCase
     {
         $response = $this->json('POST', 'orders', [
             'email' => 'john@example.com',
-            'payment_token' => 'TESTTOKEN1234'
+            'payment_token' => $this->fakePaymentGateway->validTestToken()
         ]);
 
         $response->assertStatus(422);
@@ -151,28 +205,13 @@ class PlaceOrderTest extends TestCase
 
         $fakeCart = ['cart.books' => [['book_id' => $book->id, 'quantity' => 2]]];
 
-        $this->withSession($fakeCart)->post('orders');
+        $response = $this->withSession($fakeCart)->post('orders', [
+            'email' => 'john@example.com',
+            'payment_token' => $this->fakePaymentGateway->validTestToken()
+        ]);
 
-        $this->assertEquals([], $this->fakePaymentGateway->charges());
+        $this->assertEquals(0, $this->fakePaymentGateway->totalCharges());
+        $response->assertStatus(422);
+        $this->assertArrayHasKey('inventory', $response->json());
     }
-
-    /** @test */
-    # function two_customers_cannot_purchase_the_same_inventory_item()
-    # {
-    #     $book = factory(Book::class)->create()->addInventory(1);
-
-    #     $this->fakePaymentGateway->beforeFirstCharge(function() {
-    #         $fakeCart = ['cart.books' => [['book_id' => $book->id, 'quantity' => 1]]];
-
-    #         $this->withSession($fakeCart)->post('orders');
-
-    #         // should work
-    #     });
-
-    #     $fakeCart = ['cart.books' => [['book_id' => $book->id, 'quantity' => 1]]];
-
-    #     $this->withSession($fakeCart)->post('orders');
-
-    #     // should error out
-    # }
 }

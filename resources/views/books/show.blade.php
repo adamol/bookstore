@@ -3,7 +3,7 @@
 @section('content')
 <h1>{{ $book->title }}</h1>
 
-<p>written by: {{ $book->author->name }}, category: {{ $book->category->name }}</p>
+<p>written by: {{ $book->author->name }}, category: {{ $book->formatted_categories }}</p>
 <p>{{ $book->description }}</p>
 <p>{{ $book->formatted_inventory_quantity }}</p>
 <p>{{ $book->formatted_price }}£</p>

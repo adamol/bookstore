@@ -37,15 +37,16 @@ class BookFilters
 
     protected function author($author)
     {
-        $author = Author::byKey($author);
-
-        $this->query->where('author_id', $author->id);
+        $this->query
+            ->join('authors', 'books.author_id', '=', 'authors.id')
+            ->where('authors.name', Author::keyToName($author));
     }
 
     protected function category($category)
     {
-        $category = Category::where('name', $category)->first();
-
-        $this->query->where('category_id', $category->id);
+        $this->query
+            ->join('book_category', 'books.id', '=', 'book_category.book_id')
+            ->join('categories', 'book_category.category_id', '=', 'categories.id')
+            ->where('categories.name', $category);
     }
 }

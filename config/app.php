@@ -229,4 +229,6 @@ return [
 
     ],
 
+
+    'inventory_code_salt' => env('INVENTORY_CODE_SALT'),
 ];

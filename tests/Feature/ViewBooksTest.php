@@ -23,8 +23,11 @@ class ViewBooksTest extends TestCase
             'description' => 'Lorem ipsum dolar sit amet',
             'price'       => 1000,
             'author_id'   => factory(Author::class)->create(['name' => 'John Doe'])->id,
-            'category_id' => factory(Category::class)->create(['name' => 'Fantasi'])->id
         ])->addInventory(3);
+
+        $book->categories()->attach(
+            factory(Category::class)->create(['name' => 'Fantasi'])
+        );
 
         $response = $this->get("books/{$book->id}");
 
@@ -45,14 +48,12 @@ class ViewBooksTest extends TestCase
             'description' => 'Lorem ipsum dolar sit amet',
             'price'       => 1000,
             'author_id'   => factory(Author::class)->create(['name' => 'John Doe'])->id,
-            'category_id' => factory(Category::class)->create()->id
         ]);
         $bookB = Book::create([
             'title'       => 'Book B',
             'description' => 'Lorem ipsum dolar sit amet',
             'price'       => 1500,
             'author_id'   => factory(Author::class)->create(['name' => 'Jane Doe'])->id,
-            'category_id' => factory(Category::class)->create()->id
         ]);
 
         $response = $this->get("books");
@@ -71,9 +72,12 @@ class ViewBooksTest extends TestCase
         $fantasi  = Category::create(['name' => 'fantasi']);
         $thriller = Category::create(['name' => 'thriller']);
 
-        factory(Book::class)->create(['title' => 'Fantasi A',     'category_id' => $fantasi->id]);
-        factory(Book::class)->create(['title' => 'Some Thriller', 'category_id' => $thriller->id]);
-        factory(Book::class)->create(['title' => 'Fantasi B',     'category_id' => $fantasi->id]);
+        $fantasiA = factory(Book::class)->create(['title' => 'Fantasi A']);
+        $fantasiA->categories()->attach($fantasi);
+        $thriller = factory(Book::class)->create(['title' => 'Some Thriller']);
+        $thriller->categories()->attach($thriller);
+        $fantasiB = factory(Book::class)->create(['title' => 'Fantasi B']);
+        $fantasiB->categories()->attach($fantasi);
 
         $response = $this->get("books?category=fantasi");
 
@@ -109,21 +113,21 @@ class ViewBooksTest extends TestCase
         $fantasi  = Category::create(['name' => 'fantasi']);
         $thriller = Category::create(['name' => 'thriller']);
 
-        factory(Book::class)->create([
-            'title' => 'Janes Thriller',
-            'author_id' => $jane->id,
-            'category_id' => $thriller->id
+        $janesThriller = factory(Book::class)->create([
+            'title' => 'Janes Thriller', 'author_id' => $jane->id,
         ]);
-        factory(Book::class)->create([
+        $janesThriller->categories()->attach($thriller);
+
+        $johnsThriller = factory(Book::class)->create([
             'title' => 'Johns Thriller',
             'author_id' => $john->id,
-            'category_id' => $thriller->id
         ]);
-        factory(Book::class)->create([
+        $johnsThriller->categories()->attach($thriller);
+        $janesFantasi = factory(Book::class)->create([
             'title' => 'Janes Fantasi',
             'author_id' => $jane->id,
-            'category_id' => $fantasi->id
         ]);
+        $janesFantasi->categories()->attach($fantasi);
 
 
         $response = $this->get('books?author=jane_doe&category=thriller');

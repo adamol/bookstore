@@ -54,4 +54,20 @@ class BookTest extends TestCase
 
         $this->assertEquals('out of stock', $bookB->formatted_inventory_quantity);
     }
+
+    /** @test */
+    function multiple_categories_can_be_formatted_separated_by_comma()
+    {
+        $bookA = factory(Book::class)->create();
+        $bookA->categories()->attach(factory(Category::class)->create(['name' => 'A']));
+        $bookA->categories()->attach(factory(Category::class)->create(['name' => 'B']));
+
+        $bookB = factory(Book::class)->create();
+        $bookB->categories()->attach(factory(Category::class)->create(['name' => 'C']));
+        $bookC = factory(Book::class)->create();
+
+        $this->assertEquals('A, B', $bookA->formatted_categories);
+        $this->assertEquals('C', $bookB->formatted_categories);
+        $this->assertEquals('', $bookC->formatted_categories);
+    }
 }

@@ -17,6 +17,7 @@ class CreateInventoryItemsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('book_id');
             $table->unsignedInteger('order_id')->nullable();
+            $table->string('code')->nullable();
             $table->datetime('reserved_at')->nullable();
             $table->timestamps();
         });

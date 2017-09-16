@@ -17,9 +17,6 @@ $factory->define(App\Book::class, function (Faker\Generator $faker) {
         'title' => $faker->sentence,
         'description' => $faker->paragraph,
         'price' => 1000,
-        'category_id' => function() {
-            return factory(App\Category::class)->create()->id;
-        },
         'author_id' => function() {
             return factory(App\Author::class)->create()->id;
         },
@@ -41,5 +38,14 @@ $factory->define(App\Category::class, function (Faker\Generator $faker) {
 $factory->define(App\InventoryItem::class, function (Faker\Generator $faker) {
     return [
         'book_id' => 1
+    ];
+});
+
+$factory->define(App\Order::class, function (Faker\Generator $faker) {
+    return [
+        'email' => 'john@example.com',
+        'amount' => 100,
+        'confirmation_number' => 'ORDERCONFIRMATION1234',
+        'card_last_four' => '1881'
     ];
 });

@@ -13,10 +13,8 @@ class Author extends Model
         return $this->hasMany(Book::class);
     }
 
-    public static function byKey($key)
+    public static function keyToName($key)
     {
-        $name = ucwords(str_replace('_', ' ', $key));
-
-        return Author::where('name', $name)->first();
+        return ucwords(str_replace('_', ' ', $key));
     }
 }

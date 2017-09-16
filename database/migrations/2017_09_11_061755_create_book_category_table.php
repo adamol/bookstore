@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateOrdersTable extends Migration
+class CreateBookCategoryTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,10 @@ class CreateOrdersTable extends Migration
      */
     public function up()
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('book_category', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('email');
-            $table->unsignedInteger('amount');
-            $table->string('confirmation_number');
-            $table->string('card_last_four');
+            $table->unsignedInteger('book_id');
+            $table->unsignedInteger('category_id');
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ class CreateOrdersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('book_category');
     }
 }
