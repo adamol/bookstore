@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Facades\InventoryCode;
 use Carbon\Carbon;
 
 class InventoryItem extends Model
@@ -39,5 +40,11 @@ class InventoryItem extends Model
     public function getPriceAttribute()
     {
         return $this->book->price;
+    }
+
+    public function claimFor($order)
+    {
+        $this->code = InventoryCode::generateFor($order);
+        $order->inventoryItems()->save($this);
     }
 }

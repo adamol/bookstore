@@ -43,7 +43,7 @@ class PlaceOrderTest extends TestCase
             ]
         ];
 
-        $response = $this->withSession($fakeCart)->post('orders', [
+        $response = $this->withSession($fakeCart)->json('POST', 'orders', [
             'payment_token' => $this->fakePaymentGateway->validTestToken($this->fakePaymentGateway::TEST_CARD_NUMBER),
             'email' =>  'john@example.com'
         ]);
@@ -81,7 +81,7 @@ class PlaceOrderTest extends TestCase
         $this->fakePaymentGateway->beforeFirstCharge(function($paymentGateway) use ($book, $fakeCart) {
 
             $this->withSession($fakeCart)->post('orders', [
-                'payment_token' => 'VALIDTESTTOKEN',
+                'payment_token' => $paymentGateway->validTestToken(),
                 'email' =>  'john@example.com'
             ]);
 
@@ -92,7 +92,7 @@ class PlaceOrderTest extends TestCase
         $fakeCart = ['cart.books' => [['book_id' => $book->id, 'quantity' => 1]]];
 
         $response = $this->withSession($fakeCart)->post('orders', [
-            'payment_token' => 'VALIDTESTTOKEN',
+            'payment_token' => $this->fakePaymentGateway->validTestToken(),
             'email' =>  'jane@example.com'
         ]);
 

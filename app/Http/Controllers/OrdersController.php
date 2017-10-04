@@ -35,25 +35,15 @@ class OrdersController extends Controller
         try {
             $reservation = $cart->reserveFor($request->email);
 
-            $charge = $paymentGateway->charge(
-                $reservation->amount(), $request->payment_token
-            );
-
-            $order = Order::create([
-                'amount' => $charge->amount(),
-                'email' => $reservation->email(),
-                'confirmation_number' => OrderConfirmationNumber::generate(),
-                'card_last_four' => $charge->cardLastFour()
-            ]);
-
-            foreach ($reservation->items() as $item) {
-                $item->code = InventoryCode::generateFor($order);
-                $order->inventoryItems()->save($item);
-            }
+            $order = $reservation->complete($paymentGateway, $request->payment_token);
 
             Mail::to($order->email)->send(new OrderConfirmationEmail($order));
 
-            return response()->json($order, 201);
+            if ($request->expectsJson()) {
+                return response()->json($order, 201);
+            }
+
+            return redirect("orders/{$order->confirmation_number}");
         } catch (EmptyCartException $e) {
             return response()->json(['cart' => 'Cannot place an order for an empty cart.'], 422);
         } catch (NotEnoughInventoryException $e) {
